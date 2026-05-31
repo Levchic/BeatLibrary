@@ -2,195 +2,561 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="description" content="Интерактивный справочник паттернов барабанных машин из книги Pocket Operations">
 <title>Pocket Operations — Drum Pattern Reference</title>
 <link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #0e0e0f;
-  --bg2: #161618;
-  --bg3: #1e1e21;
-  --border: rgba(255,255,255,0.07);
-  --border2: rgba(255,255,255,0.14);
-  --text: #f0ede8;
-  --text2: #8a8880;
-  --text3: #4a4845;
+  --bg:     #0c0c0d;
+  --bg2:    #141416;
+  --bg3:    #1c1c1f;
+  --bg4:    #232326;
+  --border: rgba(255,255,255,0.06);
+  --border2:rgba(255,255,255,0.12);
+  --text:   #ede9e3;
+  --text2:  #7e7c78;
+  --text3:  #42403e;
   --accent: #c8f050;
-  --accent2: #7060f8;
+  --accent2:#7060f8;
+  --red:    #f05060;
   --radius: 10px;
-  --mono: 'Space Mono', monospace;
-  --sans: 'DM Sans', sans-serif;
+  --mono:   'Space Mono', monospace;
+  --sans:   'DM Sans', sans-serif;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 16px; }
-body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+html { font-size: 16px; -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
 
+/* ── HEADER ── */
 header {
-  padding: 2rem 1.5rem 1rem;
+  padding: 1.25rem 1.25rem 0.9rem;
   border-bottom: 1px solid var(--border);
-  display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  gap: 0.6rem 1rem;
+  align-items: center;
 }
-.logo { font-family: var(--mono); font-size: 11px; color: var(--text2); letter-spacing: .1em; text-transform: uppercase; }
-.logo strong { display: block; font-size: 20px; color: var(--accent); letter-spacing: -.01em; font-family: var(--mono); margin-top: 2px; }
-.header-count { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+.logo {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text2);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+.logo strong {
+  display: block;
+  font-size: 18px;
+  color: var(--accent);
+  letter-spacing: -.02em;
+  margin-top: 1px;
+  line-height: 1;
+}
+.header-meta {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+  grid-column: 1;
+}
+.bpm-wrap {
+  grid-column: 2;
+  grid-row: 1 / 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 10px 14px;
+  min-width: 72px;
+}
+.bpm-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text3);
+  letter-spacing: .1em;
+}
+.bpm-number {
+  font-family: var(--mono);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+  cursor: default;
+}
+.bpm-buttons {
+  display: flex;
+  gap: 4px;
+}
+.bpm-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: var(--bg4);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .1s, border-color .1s;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.bpm-btn:active { background: var(--bg2); border-color: var(--accent); color: var(--accent); }
+.bpm-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+}
+.bpm-slider-row input[type=range] {
+  width: 100%;
+  accent-color: var(--accent);
+  height: 3px;
+  cursor: pointer;
+}
 
-/* BPM control in header */
-.bpm-control {
-  display: flex; align-items: center; gap: 8px;
-  font-family: var(--mono); font-size: 11px; color: var(--text2);
-}
-.bpm-control input[type=range] {
-  width: 80px; accent-color: var(--accent);
-}
-.bpm-val { color: var(--accent); font-weight: 700; min-width: 32px; }
-
+/* ── TOOLBAR ── */
 .toolbar {
-  padding: 1rem 1.5rem; display: flex; flex-direction: column; gap: .75rem;
+  padding: 0.8rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
   border-bottom: 1px solid var(--border);
-  position: sticky; top: 0; background: var(--bg); z-index: 10;
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 20;
 }
 .search-wrap { position: relative; }
-.search-wrap svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text3); pointer-events: none; }
+.search-wrap svg {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text3);
+  pointer-events: none;
+}
 #search {
-  width: 100%; background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius);
-  color: var(--text); font-family: var(--mono); font-size: 13px; padding: 10px 40px 10px 38px;
-  outline: none; transition: border-color .15s;
+  width: 100%;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 9px 36px 9px 34px;
+  outline: none;
+  transition: border-color .15s;
+  -webkit-appearance: none;
 }
 #search::placeholder { color: var(--text3); }
 #search:focus { border-color: var(--accent); }
 .clear-btn {
-  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
-  background: none; border: none; color: var(--text3); cursor: pointer;
-  font-size: 18px; line-height: 1; padding: 2px; display: none;
+  position: absolute;
+  right: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text3);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 2px 4px;
+  display: none;
 }
 .clear-btn.visible { display: block; }
 
-.filter-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
-.filter-label { font-size: 10px; color: var(--text3); font-family: var(--mono); text-transform: uppercase; letter-spacing: .08em; margin-right: 2px; flex-shrink: 0; }
+.filter-scroll {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+  align-items: center;
+}
+.filter-scroll::-webkit-scrollbar { display: none; }
+.filter-label {
+  font-size: 9px;
+  color: var(--text3);
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  flex-shrink: 0;
+}
 .chip {
-  font-family: var(--mono); font-size: 10px; padding: 4px 10px; border-radius: 20px;
-  border: 1px solid var(--border2); background: transparent; color: var(--text2);
-  cursor: pointer; transition: all .12s; white-space: nowrap; letter-spacing: .04em;
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all .12s;
+  white-space: nowrap;
+  letter-spacing: .03em;
+  flex-shrink: 0;
+  -webkit-user-select: none;
+  user-select: none;
 }
 .chip:hover { border-color: var(--text2); color: var(--text); }
-.chip.active { background: var(--accent); border-color: var(--accent); color: #0e0e0f; font-weight: 700; }
+.chip.active { background: var(--accent); border-color: var(--accent); color: #0c0c0d; font-weight: 700; }
 
-main { padding: 1.25rem 1.5rem 5rem; }
-.results-bar { font-family: var(--mono); font-size: 10px; color: var(--text3); margin-bottom: 1rem; letter-spacing: .06em; }
+/* ── MAIN ── */
+main {
+  padding: 1rem 1.25rem calc(4rem + var(--safe-bottom));
+}
+.results-bar {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text3);
+  margin-bottom: 0.75rem;
+  letter-spacing: .06em;
+}
 
-.patterns { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 8px; }
-.card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: border-color .15s; }
+.patterns {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 6px;
+}
+
+/* ── CARD ── */
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color .15s;
+}
 .card:hover { border-color: var(--border2); }
-.card.open { border-color: var(--accent); }
+.card.open { border-color: rgba(200,240,80,.35); }
 
 .card-head {
-  padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 11px 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
 }
 .card-left { flex: 1; min-width: 0; }
-.card-name { font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.card-sub { font-family: var(--mono); font-size: 10px; color: var(--text3); margin-top: 2px; }
-.genre-badge { font-family: var(--mono); font-size: 9px; padding: 3px 8px; border-radius: 20px; border: 1px solid var(--border2); color: var(--text3); white-space: nowrap; flex-shrink: 0; letter-spacing: .04em; }
-.chevron { color: var(--text3); font-size: 14px; flex-shrink: 0; transition: transform .2s; font-family: var(--mono); }
+.card-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+.card-sub {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text3);
+  margin-top: 2px;
+  letter-spacing: .03em;
+}
+.genre-badge {
+  font-family: var(--mono);
+  font-size: 9px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  border: 1px solid var(--border2);
+  color: var(--text3);
+  white-space: nowrap;
+  flex-shrink: 0;
+  letter-spacing: .03em;
+}
+.chevron {
+  color: var(--text3);
+  font-size: 12px;
+  flex-shrink: 0;
+  transition: transform .2s;
+  font-family: var(--mono);
+}
 .card.open .chevron { transform: rotate(180deg); color: var(--accent); }
 
-.card-body { display: none; padding: 0 14px 14px; border-top: 1px solid var(--border); }
+.card-body {
+  display: none;
+  padding: 0 13px 13px;
+  border-top: 1px solid var(--border);
+}
 .card.open .card-body { display: block; }
 
-/* PLAYER */
+/* ── PLAYER ── */
 .player {
-  display: flex; align-items: center; gap: 10px;
-  margin-top: 12px; margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 11px;
+  margin-bottom: 2px;
 }
 .play-btn {
-  width: 32px; height: 32px; border-radius: 50%;
-  background: var(--accent); border: none; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; transition: opacity .12s;
-  color: #0e0e0f;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: opacity .1s, transform .1s;
+  color: #0c0c0d;
+  -webkit-user-select: none;
+  user-select: none;
 }
-.play-btn:hover { opacity: .85; }
-.play-btn svg { width: 14px; height: 14px; }
-.play-btn.playing { background: var(--text2); }
+.play-btn:active { transform: scale(.92); }
+.play-btn svg { width: 13px; height: 13px; }
+.play-btn.playing { background: var(--red); }
+.play-btn.loading {
+  background: var(--text3);
+  pointer-events: none;
+  animation: pulse 0.8s infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
 
-.step-indicators { display: flex; gap: 3px; flex: 1; align-items: center; }
+.step-indicators {
+  display: flex;
+  gap: 2px;
+  flex: 1;
+  align-items: center;
+}
 .step-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--bg3); flex-shrink: 0; transition: background .05s;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--bg4);
+  flex-shrink: 0;
+  transition: background .05s;
 }
-.step-dot.bar { width: 8px; height: 8px; }
-.step-dot.active { background: var(--accent); }
+.step-dot.bar { width: 7px; height: 7px; }
+.step-dot.active { background: var(--accent); box-shadow: 0 0 5px var(--accent); }
 
-.drum-grid-wrap { overflow-x: auto; margin-top: 10px; padding-bottom: 4px; }
-table.dg { border-collapse: collapse; font-family: var(--mono); font-size: 10px; }
-table.dg .beat-header td { color: var(--text3); text-align: center; padding: 0 0 4px; width: 16px; font-size: 9px; }
-table.dg .beat-header td:first-child { width: 28px; }
-table.dg .row-label { color: var(--text2); text-align: right; padding-right: 8px; font-size: 10px; letter-spacing: .04em; }
-.cell { width: 14px; height: 14px; border-radius: 3px; background: var(--bg3); margin: 1px; transition: background .04s; }
+/* ── DRUM GRID ── */
+.drum-grid-wrap {
+  margin-top: 10px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 6px;
+  padding-bottom: 2px;
+}
+
+/* Mobile grid: rows of labelled cells */
+.dg-mobile {
+  width: 100%;
+}
+.dg-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 3px;
+}
+.dg-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text2);
+  width: 20px;
+  flex-shrink: 0;
+  text-align: right;
+  letter-spacing: .03em;
+}
+.dg-cells {
+  display: flex;
+  gap: 2px;
+  flex: 1;
+}
+.dg-group {
+  display: flex;
+  gap: 2px;
+  flex: 1;
+}
+.cell {
+  flex: 1;
+  aspect-ratio: 1;
+  border-radius: 2px;
+  background: var(--bg4);
+  transition: background .04s;
+  min-width: 0;
+}
 .cell.on { background: var(--accent); }
 .cell.on.beat1 { background: #fff; }
-.cell.playing-col { background: rgba(200,240,80,0.12); }
-.cell.on.playing-col { background: #fff; filter: brightness(1.3); }
-td { vertical-align: middle; }
+.cell.playing-col { outline: 1px solid rgba(200,240,80,.3); }
+.cell.on.playing-col { background: #fff; filter: brightness(1.2); }
 
-.card-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 10px; }
-.tag { font-family: var(--mono); font-size: 9px; padding: 2px 7px; border-radius: 20px; border: 1px solid var(--border); color: var(--text3); }
-
-.empty { text-align: center; padding: 4rem 0; color: var(--text3); font-family: var(--mono); font-size: 12px; grid-column: 1/-1; }
-.empty span { font-size: 32px; display: block; margin-bottom: .5rem; }
-
-footer {
-  position: fixed; bottom: 0; left: 0; right: 0;
-  background: var(--bg); border-top: 1px solid var(--border);
-  padding: .75rem 1.5rem; font-family: var(--mono); font-size: 9px; color: var(--text3);
-  display: flex; justify-content: space-between; letter-spacing: .04em;
+.card-tags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 9px;
+}
+.tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  padding: 2px 7px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  color: var(--text3);
+  letter-spacing: .02em;
 }
 
-@media(max-width:600px){
-  header { padding: 1.25rem 1rem .75rem; }
-  .toolbar { padding: .75rem 1rem; }
-  main { padding: 1rem 1rem 5rem; }
-  .patterns { grid-template-columns: 1fr; }
-  .bpm-control input[type=range] { width: 60px; }
+/* ── EMPTY STATE ── */
+.empty {
+  text-align: center;
+  padding: 4rem 0;
+  color: var(--text3);
+  font-family: var(--mono);
+  font-size: 11px;
+  grid-column: 1/-1;
+}
+.empty span { font-size: 28px; display: block; margin-bottom: .5rem; }
+
+/* ── FOOTER ── */
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  padding: .6rem 1.25rem calc(.6rem + var(--safe-bottom));
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text3);
+  display: flex;
+  justify-content: space-between;
+  letter-spacing: .04em;
+  z-index: 10;
+}
+
+/* ── AUDIO UNLOCK OVERLAY ── */
+#audio-unlock {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.8);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+}
+#audio-unlock.show { display: flex; }
+.audio-unlock-box {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 16px;
+  padding: 2rem 2.5rem;
+  text-align: center;
+  max-width: 300px;
+}
+.audio-unlock-box h2 {
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--accent);
+  margin-bottom: .5rem;
+  letter-spacing: .06em;
+}
+.audio-unlock-box p {
+  font-size: 13px;
+  color: var(--text2);
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+.audio-unlock-btn {
+  width: 100%;
+  padding: 13px;
+  background: var(--accent);
+  border: none;
+  border-radius: 10px;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: #0c0c0d;
+  cursor: pointer;
+  letter-spacing: .06em;
+}
+
+@media (max-width: 480px) {
+  header { padding: 1rem 1rem 0.75rem; }
+  .toolbar { padding: 0.7rem 1rem; }
+  main { padding: 0.75rem 0.75rem calc(4rem + var(--safe-bottom)); }
+  .patterns { grid-template-columns: 1fr; gap: 5px; }
+  .bpm-number { font-size: 18px; }
+  .bpm-wrap { padding: 8px 10px; min-width: 64px; }
 }
 </style>
 </head>
 <body>
+
+<!-- Audio unlock overlay for Safari -->
+<div id="audio-unlock">
+  <div class="audio-unlock-box">
+    <h2>DRUM REFERENCE</h2>
+    <p>Safari требует явного разрешения для воспроизведения звука</p>
+    <button class="audio-unlock-btn" id="unlock-btn">▶ Включить звук</button>
+  </div>
+</div>
 
 <header>
   <div class="logo">
     Pocket Operations
     <strong>DRUM REFERENCE</strong>
   </div>
-  <div class="bpm-control">
-    <span>BPM</span>
-    <input type="range" id="bpm-slider" min="60" max="180" value="90" oninput="updateBpm(this.value)">
-    <span class="bpm-val" id="bpm-val">90</span>
+  <div class="header-meta" id="total-count"></div>
+  <div class="bpm-wrap">
+    <div class="bpm-label">BPM</div>
+    <div class="bpm-number" id="bpm-val">90</div>
+    <div class="bpm-buttons">
+      <button class="bpm-btn" id="bpm-down" aria-label="BPM −5">−</button>
+      <button class="bpm-btn" id="bpm-up" aria-label="BPM +5">+</button>
+    </div>
+    <div class="bpm-slider-row">
+      <input type="range" id="bpm-slider" min="60" max="180" value="90" aria-label="BPM">
+    </div>
   </div>
-  <div class="header-count" id="total-count"></div>
 </header>
 
 <div class="toolbar">
   <div class="search-wrap">
-    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-    <input id="search" type="text" placeholder="amen break, trap, house, BD SN..." autocomplete="off" oninput="onSearch()">
-    <button class="clear-btn" id="clear-btn" onclick="clearSearch()" title="Очистить">×</button>
+    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input id="search" type="search" placeholder="amen break, trap, house, BD SN..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    <button class="clear-btn" id="clear-btn" aria-label="Очистить">×</button>
   </div>
-  <div class="filter-row">
+  <div class="filter-scroll">
     <span class="filter-label">Жанр</span>
-    <div id="genre-chips"></div>
+    <div id="genre-chips" style="display:contents"></div>
   </div>
-  <div class="filter-row">
+  <div class="filter-scroll">
     <span class="filter-label">Тип</span>
-    <button class="chip" data-mood="minimal" onclick="toggleMood(this)">Minimal</button>
-    <button class="chip" data-mood="heavy" onclick="toggleMood(this)">Heavy</button>
-    <button class="chip" data-mood="complex" onclick="toggleMood(this)">Complex</button>
-    <button class="chip" data-mood="rolling" onclick="toggleMood(this)">Rolling</button>
-    <button class="chip" data-mood="afro" onclick="toggleMood(this)">Afro/Cuban</button>
-    <button class="chip" data-mood="ab" onclick="toggleMood(this)">A/B вариации</button>
+    <button class="chip" data-mood="minimal">Minimal</button>
+    <button class="chip" data-mood="heavy">Heavy</button>
+    <button class="chip" data-mood="complex">Complex</button>
+    <button class="chip" data-mood="rolling">Rolling</button>
+    <button class="chip" data-mood="afro">Afro/Cuban</button>
+    <button class="chip" data-mood="ab">A/B вариации</button>
   </div>
 </div>
 
@@ -205,7 +571,7 @@ footer {
 </footer>
 
 <script>
-// ─── DATA ───────────────────────────────────────────────────────────────────
+// ─── DATA ────────────────────────────────────────────────────────────────────
 const PATTERNS = [
   {name:"One and Seven",genre:"Basic",inst:{BD:[1,7],SN:[5,13]},tags:["minimal"]},
   {name:"Boots n' Cats",genre:"Basic",inst:{BD:[1,9],SN:[5,13],CH:[1,3,5,7,9,11,13,15]},tags:[]},
@@ -276,7 +642,7 @@ const PATTERNS = [
   {name:"Boom Bap",genre:"Hip-Hop",inst:{CH:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],CL:[3,7,11,15],SN:[3,7,11,15],BD:[1,3,6,10,14]},tags:["complex","heavy"]},
   {name:"Most Wanted",genre:"Hip-Hop",sub:"A/B",inst:{CH:[1,3,5,7,9,11,13,15],SN:[5,13],BD:[1,7,9,10,16]},tags:["ab"]},
   {name:"The Groove",genre:"Hip-Hop",sub:"A/B",inst:{CH:[1,3,5,7,9,11,13,15],SN:[5,13],BD:[1,4,8,12,15]},tags:["ab","complex"]},
-  {name:"Amen Break",genre:"Funk/Soul",sub:"A/B/C/D",inst:{BD:[1,3,11,12],SN:[5,8,10,13,16],CH:[1,3,5,7,9,11,13,15]},tags:["ab","break","heavy"]},
+  {name:"Amen Break",genre:"Funk/Soul",sub:"A/B/C/D",inst:{BD:[1,3,11,12],SN:[5,8,10,13,16],CH:[1,3,5,7,9,11,13,15]},tags:["ab","heavy"]},
   {name:"The Funky Drummer",genre:"Funk/Soul",inst:{BD:[1,3,7,11,14],SN:[5,8,10,12,13,16],CH:[1,2,3,4,5,6,7,9,10,11,12,13,15,16],OH:[8,14]},tags:["complex","heavy"]},
   {name:"Impeach the President",genre:"Funk/Soul",inst:{BD:[1,8,9,15],SN:[5,13],CH:[1,3,5,7,8,9,13,15],OH:[11]},tags:[]},
   {name:"When the Levee Breaks",genre:"Funk/Soul",inst:{BD:[1,2,8,11,12],SN:[5,13],CH:[1,3,5,7,9,11,13,15]},tags:["heavy"]},
@@ -328,140 +694,191 @@ const PATTERNS = [
   {name:"Drum Roll 20",genre:"Rolls",inst:{HT:[3,5],MT:[7,15],LT:[16],SN:[1,9,11,14],BD:[2,4,6,8,10,12,13],CY:[9]},tags:["complex"]},
 ];
 
-// ─── AUDIO ENGINE ────────────────────────────────────────────────────────────
-let ctx = null;
-function getCtx(){
-  if(!ctx) ctx = new (window.AudioContext||window.webkitAudioContext)();
-  if(ctx.state==='suspended') ctx.resume();
-  return ctx;
+// ─── AUDIO ENGINE (Safari-safe) ──────────────────────────────────────────────
+let audioCtx = null;
+let audioUnlocked = false;
+
+// Safari requires AudioContext to be created AND resumed inside a user gesture.
+// We show an overlay to get that first gesture.
+function initAudioOverlay() {
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+    || /iPad|iPhone|iPod/.test(navigator.userAgent);
+  if (isSafari) {
+    document.getElementById('audio-unlock').classList.add('show');
+    document.getElementById('unlock-btn').addEventListener('click', async () => {
+      await unlockAudio();
+      document.getElementById('audio-unlock').classList.remove('show');
+    });
+  } else {
+    audioUnlocked = true;
+  }
 }
 
-// Синтез каждого инструмента через Web Audio API
-function synthKick(t, ac){
+async function unlockAudio() {
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    audioCtx = new AC();
+    // Play a silent buffer to fully unlock
+    const buf = audioCtx.createBuffer(1, 1, 22050);
+    const src = audioCtx.createBufferSource();
+    src.buffer = buf;
+    src.connect(audioCtx.destination);
+    src.start(0);
+    if (audioCtx.state === 'suspended') {
+      await audioCtx.resume();
+    }
+    audioUnlocked = true;
+  } catch(e) {
+    console.warn('Audio unlock failed:', e);
+  }
+}
+
+async function getCtx() {
+  if (!audioCtx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    audioCtx = new AC();
+  }
+  if (audioCtx.state === 'suspended') {
+    await audioCtx.resume();
+  }
+  return audioCtx;
+}
+
+// ── Synth functions ──
+function synthKick(t, ac) {
   const o = ac.createOscillator();
   const g = ac.createGain();
-  o.connect(g); g.connect(ac.destination);
-  o.frequency.setValueAtTime(150, t);
-  o.frequency.exponentialRampToValueAtTime(40, t+0.08);
-  g.gain.setValueAtTime(1, t);
-  g.gain.exponentialRampToValueAtTime(0.001, t+0.35);
-  o.start(t); o.stop(t+0.36);
+  const comp = ac.createDynamicsCompressor();
+  o.connect(g); g.connect(comp); comp.connect(ac.destination);
+  o.frequency.setValueAtTime(160, t);
+  o.frequency.exponentialRampToValueAtTime(38, t + 0.09);
+  g.gain.setValueAtTime(1.2, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+  o.start(t); o.stop(t + 0.41);
 }
-function synthSnare(t, ac){
-  // noise layer
-  const buf = ac.createBuffer(1, ac.sampleRate*0.15, ac.sampleRate);
+
+function synthSnare(t, ac) {
+  const buf = ac.createBuffer(1, Math.floor(ac.sampleRate * 0.18), ac.sampleRate);
   const d = buf.getChannelData(0);
-  for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
   const src = ac.createBufferSource();
   src.buffer = buf;
   const bpf = ac.createBiquadFilter();
-  bpf.type='bandpass'; bpf.frequency.value=2500; bpf.Q.value=0.8;
+  bpf.type = 'bandpass'; bpf.frequency.value = 2200; bpf.Q.value = 0.7;
   const g = ac.createGain();
   src.connect(bpf); bpf.connect(g); g.connect(ac.destination);
-  g.gain.setValueAtTime(0.7, t);
-  g.gain.exponentialRampToValueAtTime(0.001, t+0.15);
-  src.start(t); src.stop(t+0.16);
-  // tone layer
+  g.gain.setValueAtTime(0.8, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+  src.start(t); src.stop(t + 0.19);
+
   const o = ac.createOscillator();
   const g2 = ac.createGain();
   o.connect(g2); g2.connect(ac.destination);
-  o.frequency.value=200;
-  g2.gain.setValueAtTime(0.5, t);
-  g2.gain.exponentialRampToValueAtTime(0.001, t+0.08);
-  o.start(t); o.stop(t+0.09);
+  o.frequency.value = 195;
+  g2.gain.setValueAtTime(0.6, t);
+  g2.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+  o.start(t); o.stop(t + 0.11);
 }
-function synthHihat(t, ac, open){
-  const dur = open ? 0.3 : 0.05;
-  const buf = ac.createBuffer(1, ac.sampleRate*dur, ac.sampleRate);
+
+function synthHihat(t, ac, open) {
+  const dur = open ? 0.28 : 0.048;
+  const bufLen = Math.max(1, Math.floor(ac.sampleRate * dur));
+  const buf = ac.createBuffer(1, bufLen, ac.sampleRate);
   const d = buf.getChannelData(0);
-  for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
   const src = ac.createBufferSource();
   src.buffer = buf;
   const hpf = ac.createBiquadFilter();
-  hpf.type='highpass'; hpf.frequency.value=open?7000:9000;
+  hpf.type = 'highpass'; hpf.frequency.value = open ? 6500 : 8500;
   const g = ac.createGain();
   src.connect(hpf); hpf.connect(g); g.connect(ac.destination);
-  g.gain.setValueAtTime(open?0.25:0.18, t);
-  g.gain.exponentialRampToValueAtTime(0.001, t+dur*0.9);
-  src.start(t); src.stop(t+dur);
+  g.gain.setValueAtTime(open ? 0.22 : 0.16, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur * 0.88);
+  src.start(t); src.stop(t + dur);
 }
-function synthClap(t, ac){
-  for(let i=0;i<3;i++){
-    const delay = i*0.012;
-    const buf = ac.createBuffer(1, ac.sampleRate*0.06, ac.sampleRate);
+
+function synthClap(t, ac) {
+  for (let i = 0; i < 3; i++) {
+    const delay = i * 0.012;
+    const bufLen = Math.max(1, Math.floor(ac.sampleRate * 0.06));
+    const buf = ac.createBuffer(1, bufLen, ac.sampleRate);
     const d = buf.getChannelData(0);
-    for(let j=0;j<d.length;j++) d[j]=Math.random()*2-1;
-    const src = ac.createBufferSource(); src.buffer=buf;
-    const bpf = ac.createBiquadFilter(); bpf.type='bandpass'; bpf.frequency.value=1200; bpf.Q.value=0.6;
+    for (let j = 0; j < d.length; j++) d[j] = Math.random() * 2 - 1;
+    const src = ac.createBufferSource(); src.buffer = buf;
+    const bpf = ac.createBiquadFilter(); bpf.type = 'bandpass'; bpf.frequency.value = 1100; bpf.Q.value = 0.5;
     const g = ac.createGain();
     src.connect(bpf); bpf.connect(g); g.connect(ac.destination);
-    g.gain.setValueAtTime(0.5, t+delay);
-    g.gain.exponentialRampToValueAtTime(0.001, t+delay+0.06);
-    src.start(t+delay); src.stop(t+delay+0.07);
+    g.gain.setValueAtTime(0.55, t + delay);
+    g.gain.exponentialRampToValueAtTime(0.001, t + delay + 0.07);
+    src.start(t + delay); src.stop(t + delay + 0.08);
   }
 }
-function synthTom(t, ac, freq){
+
+function synthTom(t, ac, freq) {
   const o = ac.createOscillator();
   const g = ac.createGain();
   o.connect(g); g.connect(ac.destination);
   o.frequency.setValueAtTime(freq, t);
-  o.frequency.exponentialRampToValueAtTime(freq*0.5, t+0.12);
-  g.gain.setValueAtTime(0.7, t);
-  g.gain.exponentialRampToValueAtTime(0.001, t+0.25);
-  o.start(t); o.stop(t+0.26);
+  o.frequency.exponentialRampToValueAtTime(freq * 0.45, t + 0.14);
+  g.gain.setValueAtTime(0.75, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+  o.start(t); o.stop(t + 0.29);
 }
-function synthRimshot(t, ac){
+
+function synthRimshot(t, ac) {
   const o = ac.createOscillator();
   const g = ac.createGain();
   o.connect(g); g.connect(ac.destination);
-  o.frequency.value=800;
+  o.frequency.value = 900;
   g.gain.setValueAtTime(0.4, t);
-  g.gain.exponentialRampToValueAtTime(0.001, t+0.04);
-  o.start(t); o.stop(t+0.05);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+  o.start(t); o.stop(t + 0.06);
 }
-function synthCowbell(t, ac){
+
+function synthCowbell(t, ac) {
   const o1 = ac.createOscillator(), o2 = ac.createOscillator();
   const g = ac.createGain();
   o1.connect(g); o2.connect(g); g.connect(ac.destination);
-  o1.frequency.value=562; o2.frequency.value=845;
-  o1.type='square'; o2.type='square';
-  g.gain.setValueAtTime(0.3, t);
-  g.gain.exponentialRampToValueAtTime(0.001, t+0.3);
-  o1.start(t); o1.stop(t+0.31);
-  o2.start(t); o2.stop(t+0.31);
-}
-function synthCymbal(t, ac){
-  synthHihat(t, ac, true);
-}
-function synthShaker(t, ac){
-  const buf = ac.createBuffer(1, ac.sampleRate*0.04, ac.sampleRate);
-  const d = buf.getChannelData(0);
-  for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
-  const src = ac.createBufferSource(); src.buffer=buf;
-  const hpf = ac.createBiquadFilter(); hpf.type='highpass'; hpf.frequency.value=8000;
-  const g = ac.createGain();
-  src.connect(hpf); hpf.connect(g); g.connect(ac.destination);
-  g.gain.setValueAtTime(0.15, t);
-  g.gain.exponentialRampToValueAtTime(0.001, t+0.04);
-  src.start(t); src.stop(t+0.05);
+  o1.frequency.value = 562; o2.frequency.value = 845;
+  o1.type = 'square'; o2.type = 'square';
+  g.gain.setValueAtTime(0.28, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.32);
+  o1.start(t); o1.stop(t + 0.33);
+  o2.start(t); o2.stop(t + 0.33);
 }
 
-function triggerInstrument(name, time, ac){
-  switch(name){
-    case 'BD': synthKick(time, ac); break;
-    case 'SN': synthSnare(time, ac); break;
-    case 'CH': synthHihat(time, ac, false); break;
-    case 'OH': synthHihat(time, ac, true); break;
-    case 'CL': synthClap(time, ac); break;
-    case 'HT': synthTom(time, ac, 500); break;
-    case 'MT': synthTom(time, ac, 320); break;
-    case 'LT': synthTom(time, ac, 180); break;
-    case 'RS': synthRimshot(time, ac); break;
-    case 'CB': synthCowbell(time, ac); break;
-    case 'CY': synthCymbal(time, ac); break;
-    case 'SH': synthShaker(time, ac); break;
-    default:   synthHihat(time, ac, false); break;
-  }
+function synthShaker(t, ac) {
+  const bufLen = Math.max(1, Math.floor(ac.sampleRate * 0.04));
+  const buf = ac.createBuffer(1, bufLen, ac.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  const src = ac.createBufferSource(); src.buffer = buf;
+  const hpf = ac.createBiquadFilter(); hpf.type = 'highpass'; hpf.frequency.value = 7500;
+  const g = ac.createGain();
+  src.connect(hpf); hpf.connect(g); g.connect(ac.destination);
+  g.gain.setValueAtTime(0.14, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+  src.start(t); src.stop(t + 0.05);
+}
+
+function triggerInstrument(name, time, ac) {
+  try {
+    switch (name) {
+      case 'BD': synthKick(time, ac); break;
+      case 'SN': synthSnare(time, ac); break;
+      case 'CH': synthHihat(time, ac, false); break;
+      case 'OH': synthHihat(time, ac, true); break;
+      case 'CL': synthClap(time, ac); break;
+      case 'HT': synthTom(time, ac, 520); break;
+      case 'MT': synthTom(time, ac, 330); break;
+      case 'LT': synthTom(time, ac, 185); break;
+      case 'RS': synthRimshot(time, ac); break;
+      case 'CB': synthCowbell(time, ac); break;
+      case 'CY': synthHihat(time, ac, true); break;
+      case 'SH': synthShaker(time, ac); break;
+      default:   synthHihat(time, ac, false); break;
+    }
+  } catch(e) { /* ignore scheduling errors */ }
 }
 
 // ─── SEQUENCER ───────────────────────────────────────────────────────────────
@@ -470,95 +887,103 @@ let playingCardId = null;
 let currentStep = 0;
 let scheduleTimer = null;
 let nextStepTime = 0;
-const LOOKAHEAD = 0.1;
-const SCHEDULE_INTERVAL = 40;
+const LOOKAHEAD = 0.12;
+const SCHEDULE_INTERVAL = 35;
 
-function stepDuration(){ return (60/bpm)/4; } // 16ths
+function stepDuration() { return (60 / bpm) / 4; }
 
-function scheduleStep(inst, step, time, ac){
-  Object.entries(inst).forEach(([name, steps])=>{
-    if(steps.includes(step)) triggerInstrument(name, time, ac);
+function scheduleStep(inst, step, time, ac) {
+  Object.entries(inst).forEach(([name, steps]) => {
+    if (steps.includes(step)) triggerInstrument(name, time, ac);
   });
 }
 
-function scheduleLoop(){
-  if(playingCardId === null) return;
-  const ac = getCtx();
-  while(nextStepTime < ac.currentTime + LOOKAHEAD){
-    const p = getPlayingPattern();
-    if(p) scheduleStep(p.inst, currentStep+1, nextStepTime, ac);
-    highlightStep(currentStep);
-    currentStep = (currentStep+1) % 16;
+function scheduleLoop() {
+  if (playingCardId === null) return;
+  const ac = audioCtx;
+  if (!ac) return;
+  while (nextStepTime < ac.currentTime + LOOKAHEAD) {
+    const p = PATTERNS[playingCardId];
+    if (p) scheduleStep(p.inst, currentStep + 1, nextStepTime, ac);
+    const stepToHighlight = currentStep;
+    // delayed visual update aligned to audio
+    const delay = Math.max(0, (nextStepTime - ac.currentTime) * 1000);
+    setTimeout(() => highlightStep(stepToHighlight), delay);
+    currentStep = (currentStep + 1) % 16;
     nextStepTime += stepDuration();
   }
   scheduleTimer = setTimeout(scheduleLoop, SCHEDULE_INTERVAL);
 }
 
-function getPlayingPattern(){
-  return PATTERNS[playingCardId] || null;
-}
-
-function highlightStep(step){
-  requestAnimationFrame(()=>{
-    const card = document.querySelector(`.card[data-id="${playingCardId}"]`);
-    if(!card) return;
-    card.querySelectorAll('.step-dot').forEach((d,i)=>{
-      d.classList.toggle('active', i===step);
-    });
-    // highlight column in grid
-    card.querySelectorAll('table.dg').forEach(tbl=>{
-      tbl.querySelectorAll('tr').forEach(row=>{
-        const cells = row.querySelectorAll('td');
-        cells.forEach((td,ci)=>{
-          if(ci===0) return;
-          const div = td.querySelector('.cell');
-          if(div){
-            div.classList.toggle('playing-col', ci-1===step);
-          }
-        });
-      });
-    });
+function highlightStep(step) {
+  const card = document.querySelector(`.card[data-id="${playingCardId}"]`);
+  if (!card) return;
+  card.querySelectorAll('.step-dot').forEach((d, i) => {
+    d.classList.toggle('active', i === step);
+  });
+  card.querySelectorAll('.cell').forEach(cell => {
+    const col = parseInt(cell.dataset.col, 10);
+    cell.classList.toggle('playing-col', col === step);
   });
 }
 
-function stopPlayback(){
-  if(scheduleTimer){ clearTimeout(scheduleTimer); scheduleTimer=null; }
-  if(playingCardId !== null){
+function stopPlayback() {
+  if (scheduleTimer) { clearTimeout(scheduleTimer); scheduleTimer = null; }
+  if (playingCardId !== null) {
     const old = document.querySelector(`.card[data-id="${playingCardId}"]`);
-    if(old){
-      old.querySelectorAll('.step-dot').forEach(d=>d.classList.remove('active'));
-      old.querySelectorAll('.cell').forEach(c=>c.classList.remove('playing-col'));
+    if (old) {
+      old.querySelectorAll('.step-dot').forEach(d => d.classList.remove('active'));
+      old.querySelectorAll('.cell').forEach(c => c.classList.remove('playing-col'));
       const btn = old.querySelector('.play-btn');
-      if(btn) btn.classList.remove('playing');
+      if (btn) { btn.classList.remove('playing', 'loading'); btn.innerHTML = ICON_PLAY; }
     }
   }
   playingCardId = null;
   currentStep = 0;
 }
 
-function togglePlay(cardId, event){
+async function togglePlay(cardId, event) {
   event.stopPropagation();
-  const ac = getCtx();
-  if(playingCardId === cardId){
+
+  if (playingCardId === cardId) {
     stopPlayback();
     return;
   }
   stopPlayback();
-  playingCardId = cardId;
-  currentStep = 0;
-  nextStepTime = ac.currentTime + 0.05;
+
   const btn = document.querySelector(`.card[data-id="${cardId}"] .play-btn`);
-  if(btn) btn.classList.add('playing');
-  scheduleLoop();
+  if (btn) { btn.classList.add('loading'); btn.innerHTML = '···'; }
+
+  try {
+    const ac = await getCtx();
+    playingCardId = cardId;
+    currentStep = 0;
+    nextStepTime = ac.currentTime + 0.08;
+
+    if (btn) { btn.classList.remove('loading'); btn.classList.add('playing'); btn.innerHTML = ICON_STOP; }
+    scheduleLoop();
+  } catch(e) {
+    if (btn) { btn.classList.remove('loading'); btn.innerHTML = ICON_PLAY; }
+    // Show overlay on error (Safari policy)
+    document.getElementById('audio-unlock').classList.add('show');
+  }
 }
 
-function updateBpm(v){
-  bpm = parseInt(v);
-  document.getElementById('bpm-val').textContent = v;
+// ─── BPM CONTROLS ────────────────────────────────────────────────────────────
+function updateBpm(v) {
+  bpm = Math.min(180, Math.max(60, parseInt(v)));
+  document.getElementById('bpm-val').textContent = bpm;
+  document.getElementById('bpm-slider').value = bpm;
 }
 
-// ─── UI ──────────────────────────────────────────────────────────────────────
-const GENRES = [...new Set(PATTERNS.map(p=>p.genre))];
+document.getElementById('bpm-slider').addEventListener('input', function() {
+  updateBpm(this.value);
+});
+document.getElementById('bpm-up').addEventListener('click', () => updateBpm(bpm + 5));
+document.getElementById('bpm-down').addEventListener('click', () => updateBpm(bpm - 5));
+
+// ─── UI STATE ────────────────────────────────────────────────────────────────
+const GENRES = [...new Set(PATTERNS.map(p => p.genre))];
 let activeGenre = 'all';
 let activeMoods = new Set();
 let openCardId = null;
@@ -567,104 +992,118 @@ document.getElementById('total-count').textContent = PATTERNS.length + ' пат�
 document.getElementById('footer-count').textContent = PATTERNS.length + ' patterns';
 
 const gc = document.getElementById('genre-chips');
-gc.innerHTML = `<button class="chip active" onclick="setGenre('all',this)">Все</button>` +
-  GENRES.map(g=>`<button class="chip" onclick="setGenre('${g}',this)">${g}</button>`).join('');
+gc.innerHTML = `<button class="chip active" data-genre="all">Все</button>` +
+  GENRES.map(g => `<button class="chip" data-genre="${g}">${g}</button>`).join('');
 
-function setGenre(g,el){
-  activeGenre=g;
-  document.querySelectorAll('#genre-chips .chip').forEach(c=>c.classList.remove('active'));
-  el.classList.add('active');
+gc.addEventListener('click', e => {
+  const btn = e.target.closest('.chip');
+  if (!btn) return;
+  activeGenre = btn.dataset.genre;
+  gc.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
   render();
-}
-function toggleMood(el){
-  const m=el.dataset.mood;
-  if(activeMoods.has(m)){activeMoods.delete(m);el.classList.remove('active');}
-  else{activeMoods.add(m);el.classList.add('active');}
+});
+
+document.querySelector('.filter-scroll:last-child').addEventListener('click', e => {
+  const btn = e.target.closest('.chip[data-mood]');
+  if (!btn) return;
+  const m = btn.dataset.mood;
+  if (activeMoods.has(m)) { activeMoods.delete(m); btn.classList.remove('active'); }
+  else { activeMoods.add(m); btn.classList.add('active'); }
   render();
-}
-function onSearch(){
-  const v=document.getElementById('search').value;
-  document.getElementById('clear-btn').classList.toggle('visible',v.length>0);
+});
+
+document.getElementById('search').addEventListener('input', function() {
+  document.getElementById('clear-btn').classList.toggle('visible', this.value.length > 0);
   render();
-}
-function clearSearch(){
-  document.getElementById('search').value='';
+});
+document.getElementById('clear-btn').addEventListener('click', () => {
+  document.getElementById('search').value = '';
   document.getElementById('clear-btn').classList.remove('visible');
   render();
-}
+});
 
-function drawGrid(inst){
-  const rows=Object.keys(inst);
-  let t='<table class="dg"><thead><tr class="beat-header"><td></td>';
-  for(let i=1;i<=16;i++) t+=`<td>${i}</td>`;
-  t+='</tr></thead><tbody>';
-  rows.forEach(r=>{
-    const hits=new Set(inst[r]);
-    t+=`<tr><td class="row-label">${r}</td>`;
-    for(let i=1;i<=16;i++){
-      t+=`<td><div class="cell${hits.has(i)?' on':''}${hits.has(i)&&i===1?' beat1':''}"></div></td>`;
+// ─── GRID RENDERER ───────────────────────────────────────────────────────────
+function drawGrid(inst) {
+  const rows = Object.keys(inst);
+  let html = '<div class="dg-mobile">';
+  rows.forEach(rowName => {
+    const hits = new Set(inst[rowName]);
+    html += `<div class="dg-row"><span class="dg-label">${rowName}</span><div class="dg-cells">`;
+    for (let g = 0; g < 4; g++) {
+      html += '<div class="dg-group">';
+      for (let s = 0; s < 4; s++) {
+        const step = g * 4 + s + 1;
+        const on = hits.has(step);
+        const b1 = on && step === 1;
+        html += `<div class="cell${on?' on':''}${b1?' beat1':''}" data-col="${step-1}"></div>`;
+      }
+      html += '</div>';
     }
-    t+='</tr>';
+    html += '</div></div>';
   });
-  return t+'</tbody></table>';
+  return html + '</div>';
 }
 
-function toggleCard(id){
-  if(openCardId===id){openCardId=null;}else{openCardId=id;}
-  document.querySelectorAll('.card').forEach(c=>{
-    c.classList.toggle('open', c.dataset.id===String(id));
+// ─── CARD TOGGLE ─────────────────────────────────────────────────────────────
+function toggleCard(id) {
+  if (openCardId === id) { openCardId = null; }
+  else { openCardId = id; }
+  document.querySelectorAll('.card').forEach(c => {
+    c.classList.toggle('open', c.dataset.id === String(id));
   });
 }
 
-// Play/stop icons
-const ICON_PLAY = `<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6,4 20,12 6,20"/></svg>`;
+const ICON_PLAY = `<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="7,4 20,12 7,20"/></svg>`;
 const ICON_STOP = `<svg viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="2"/></svg>`;
 
-function render(){
-  const q=document.getElementById('search').value.toLowerCase().trim();
-  const filtered=PATTERNS.filter(p=>{
-    if(activeGenre!=='all'&&p.genre!==activeGenre) return false;
-    if(activeMoods.size){
-      const tags=p.tags||[];let match=false;
-      for(const m of activeMoods){
-        if(m==='ab'&&p.sub){match=true;break;}
-        if(tags.includes(m)){match=true;break;}
+// ─── RENDER ──────────────────────────────────────────────────────────────────
+function render() {
+  const q = document.getElementById('search').value.toLowerCase().trim();
+  const filtered = PATTERNS.filter(p => {
+    if (activeGenre !== 'all' && p.genre !== activeGenre) return false;
+    if (activeMoods.size) {
+      const tags = p.tags || [];
+      let match = false;
+      for (const m of activeMoods) {
+        if (m === 'ab' && p.sub) { match = true; break; }
+        if (tags.includes(m)) { match = true; break; }
       }
-      if(!match) return false;
+      if (!match) return false;
     }
-    if(q){
-      const hay=(p.name+' '+p.genre+' '+(p.sub||'')+' '+Object.keys(p.inst).join(' ')).toLowerCase();
-      if(!hay.includes(q)) return false;
+    if (q) {
+      const hay = (p.name + ' ' + p.genre + ' ' + (p.sub || '') + ' ' + Object.keys(p.inst).join(' ')).toLowerCase();
+      if (!hay.includes(q)) return false;
     }
     return true;
   });
 
-  document.getElementById('results-bar').textContent=
-    filtered.length===PATTERNS.length
-      ?`Все паттерны · ${filtered.length}`
-      :`Найдено: ${filtered.length} из ${PATTERNS.length}`;
+  document.getElementById('results-bar').textContent =
+    filtered.length === PATTERNS.length
+      ? `Все паттерны · ${filtered.length}`
+      : `Найдено: ${filtered.length} из ${PATTERNS.length}`;
 
-  const container=document.getElementById('patterns');
-  if(!filtered.length){
-    container.innerHTML='<div class="empty"><span>◾</span>Паттерны не найдены</div>';
+  const container = document.getElementById('patterns');
+
+  if (!filtered.length) {
+    container.innerHTML = '<div class="empty"><span>◾</span>Паттерны не найдены</div>';
     return;
   }
 
-  // find real index in PATTERNS for each filtered item
-  container.innerHTML=filtered.map(p=>{
-    const id=PATTERNS.indexOf(p);
-    const instKeys=Object.keys(p.inst).join(' · ');
-    const isOpen=openCardId===id;
-    const isPlaying=playingCardId===id;
+  container.innerHTML = filtered.map(p => {
+    const id = PATTERNS.indexOf(p);
+    const instKeys = Object.keys(p.inst).join(' · ');
+    const isOpen = openCardId === id;
+    const isPlaying = playingCardId === id;
 
-    const dots=Array.from({length:16},(_,i)=>
-      `<div class="step-dot${i%4===0?' bar':''}${isPlaying&&currentStep===i?' active':''}"></div>`
+    const dots = Array.from({ length: 16 }, (_, i) =>
+      `<div class="step-dot${i % 4 === 0 ? ' bar' : ''}${isPlaying && currentStep === i ? ' active' : ''}"></div>`
     ).join('');
 
-    return `<div class="card${isOpen?' open':''}" data-id="${id}">
+    return `<div class="card${isOpen ? ' open' : ''}" data-id="${id}">
       <div class="card-head" onclick="toggleCard(${id})">
         <div class="card-left">
-          <div class="card-name">${p.name}${p.sub?` <span style="color:var(--text3);font-weight:400;font-size:11px">(${p.sub})</span>`:''}</div>
+          <div class="card-name">${p.name}${p.sub ? ` <span style="color:var(--text3);font-weight:400;font-size:10px">(${p.sub})</span>` : ''}</div>
           <div class="card-sub">${instKeys}</div>
         </div>
         <span class="genre-badge">${p.genre}</span>
@@ -672,23 +1111,25 @@ function render(){
       </div>
       <div class="card-body">
         <div class="player">
-          <button class="play-btn${isPlaying?' playing':''}" onclick="togglePlay(${id},event)" title="Play/Stop">
-            ${isPlaying?ICON_STOP:ICON_PLAY}
+          <button class="play-btn${isPlaying ? ' playing' : ''}" onclick="togglePlay(${id},event)" aria-label="Play/Stop">
+            ${isPlaying ? ICON_STOP : ICON_PLAY}
           </button>
           <div class="step-indicators">${dots}</div>
         </div>
         <div class="drum-grid-wrap">${drawGrid(p.inst)}</div>
-        <div class="card-tags">${(p.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+        <div class="card-tags">${(p.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}</div>
       </div>
     </div>`;
   }).join('');
 }
 
+// ─── INIT ────────────────────────────────────────────────────────────────────
 render();
+initAudioOverlay();
 
-if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('sw.js').catch(()=>{});
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
   });
 }
 </script>
