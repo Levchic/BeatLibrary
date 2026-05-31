@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Интерактивный справочник паттернов барабанных машин из книги Pocket Operations">
+<title>Pocket Operations — Drum Pattern Reference</title>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0e0e0f;
+  --bg2: #161618;
+  --bg3: #1e1e21;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.14);
+  --text: #f0ede8;
+  --text2: #8a8880;
+  --text3: #4a4845;
+  --accent: #c8f050;
+  --accent2: #7060f8;
+  --hit: #c8f050;
+  --radius: 10px;
+  --mono: 'Space Mono', monospace;
+  --sans: 'DM Sans', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* HEADER */
+header {
+  padding: 2rem 1.5rem 1rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.logo {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text2);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.logo strong {
+  display: block;
+  font-size: 20px;
+  color: var(--accent);
+  letter-spacing: -.01em;
+  font-family: var(--mono);
+  margin-top: 2px;
+}
+.header-count {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text3);
+}
+
+/* TOOLBAR */
+.toolbar {
+  padding: 1rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 10;
+}
+.search-wrap {
+  position: relative;
+}
+.search-wrap svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text3);
+  pointer-events: none;
+}
+#search {
+  width: 100%;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13px;
+  padding: 10px 40px 10px 38px;
+  outline: none;
+  transition: border-color .15s;
+}
+#search::placeholder { color: var(--text3); }
+#search:focus { border-color: var(--accent); }
+.clear-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text3);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 2px;
+  display: none;
+}
+.clear-btn.visible { display: block; }
+
+.filter-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.filter-label {
+  font-size: 10px;
+  color: var(--text3);
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-right: 2px;
+  flex-shrink: 0;
+}
+.chip {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all .12s;
+  white-space: nowrap;
+  letter-spacing: .04em;
+}
+.chip:hover { border-color: var(--text2); color: var(--text); }
+.chip.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0e0e0f;
+  font-weight: 700;
+}
+
+/* MAIN */
+main {
+  padding: 1.25rem 1.5rem 4rem;
+}
+.results-bar {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+  margin-bottom: 1rem;
+  letter-spacing: .06em;
+}
+
+/* GRID */
+.patterns {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 8px;
+}
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color .15s;
+}
+.card:hover { border-color: var(--border2); }
+.card.open { border-color: var(--accent); }
+.card-head {
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.card-left { flex: 1; min-width: 0; }
+.card-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.card-sub {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+  margin-top: 2px;
+}
+.genre-badge {
+  font-family: var(--mono);
+  font-size: 9px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  border: 1px solid var(--border2);
+  color: var(--text3);
+  white-space: nowrap;
+  flex-shrink: 0;
+  letter-spacing: .04em;
+}
+.chevron {
+  color: var(--text3);
+  font-size: 14px;
+  flex-shrink: 0;
+  transition: transform .2s;
+  font-family: var(--mono);
+}
+.card.open .chevron { transform: rotate(180deg); color: var(--accent); }
+
+.card-body {
+  display: none;
+  padding: 0 14px 14px;
+  border-top: 1px solid var(--border);
+  margin-top: 0;
+}
+.card.open .card-body { display: block; }
+
+/* DRUM GRID */
+.drum-grid-wrap {
+  overflow-x: auto;
+  margin-top: 12px;
+  padding-bottom: 4px;
+}
+table.dg {
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 10px;
+}
+table.dg .beat-header td {
+  color: var(--text3);
+  text-align: center;
+  padding: 0 0 4px;
+  width: 16px;
+  font-size: 9px;
+}
+table.dg .beat-header td:first-child { width: 28px; }
+table.dg .row-label {
+  color: var(--text2);
+  text-align: right;
+  padding-right: 8px;
+  font-size: 10px;
+  letter-spacing: .04em;
+}
+.cell {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  background: var(--bg3);
+  margin: 1px;
+}
+.cell.on { background: var(--accent); }
+.cell.on.beat1 { background: #fff; }
+td { vertical-align: middle; }
+
+.card-tags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  padding: 2px 7px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  color: var(--text3);
+}
+
+/* EMPTY */
+.empty {
+  text-align: center;
+  padding: 4rem 0;
+  color: var(--text3);
+  font-family: var(--mono);
+  font-size: 12px;
+  grid-column: 1/-1;
+}
+.empty span { font-size: 32px; display: block; margin-bottom: .5rem; }
+
+/* FOOTER */
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  padding: .75rem 1.5rem;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text3);
+  display: flex;
+  justify-content: space-between;
+  letter-spacing: .04em;
+}
+
+/* MOBILE */
+@media(max-width:600px){
+  header { padding: 1.25rem 1rem .75rem; }
+  .toolbar { padding: .75rem 1rem; }
+  main { padding: 1rem 1rem 4rem; }
+  .patterns { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    Pocket Operations
+    <strong>DRUM REFERENCE</strong>
+  </div>
+  <div class="header-count" id="total-count"></div>
+</header>
+
+<div class="toolbar">
+  <div class="search-wrap">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input id="search" type="text" placeholder="amen break, trap, house, BD SN..." autocomplete="off" oninput="onSearch()">
+    <button class="clear-btn" id="clear-btn" onclick="clearSearch()" title="Очистить">×</button>
+  </div>
+
+  <div class="filter-row">
+    <span class="filter-label">Жанр</span>
+    <div id="genre-chips"></div>
+  </div>
+
+  <div class="filter-row">
+    <span class="filter-label">Тип</span>
+    <button class="chip" data-mood="minimal" onclick="toggleMood(this)">Minimal</button>
+    <button class="chip" data-mood="heavy" onclick="toggleMood(this)">Heavy</button>
+    <button class="chip" data-mood="complex" onclick="toggleMood(this)">Complex</button>
+    <button class="chip" data-mood="rolling" onclick="toggleMood(this)">Rolling</button>
+    <button class="chip" data-mood="afro" onclick="toggleMood(this)">Afro/Cuban</button>
+    <button class="chip" data-mood="ab" onclick="toggleMood(this)">A/B вариации</button>
+  </div>
+</div>
+
+<main>
+  <div class="results-bar" id="results-bar"></div>
+  <div class="patterns" id="patterns"></div>
+</main>
+
+<footer>
+  <span>Based on Pocket Operations by Paul Wenzel</span>
+  <span id="footer-count"></span>
+</footer>
+
+<script>
+const PATTERNS = [
+  {name:"One and Seven",genre:"Basic",inst:{BD:[1,7],SN:[5,13]},tags:["minimal"]},
+  {name:"Boots n' Cats",genre:"Basic",inst:{BD:[1,9],SN:[5,13],CH:[1,3,5,7,9,11,13,15]},tags:[]},
+  {name:"Tiny House",genre:"Basic",inst:{OH:[3,7,11,15],BD:[1,5,9,13]},tags:["minimal"]},
+  {name:"Good to Go",genre:"Basic",inst:{BD:[1,4,7,11],SN:[5,13]},tags:["minimal"]},
+  {name:"Hip Hop (basic)",genre:"Basic",inst:{BD:[1,3,7,8,15],SN:[5,13],CH:[1,3,5,7,9,11,13,15]},tags:[]},
+
+  {name:"Standard Break 1",genre:"Breaks",inst:{BD:[1,11],SN:[5,13],CH:[1,3,5,7,9,10,11,13,15]},tags:[]},
+  {name:"Standard Break 2",genre:"Breaks",inst:{BD:[1,11],SN:[5,13],CH:[1,3,5,7,8,9,11,15]},tags:[]},
+  {name:"Rolling Break",genre:"Breaks",inst:{BD:[1,8,11],SN:[5,13],CH:[1,3,5,7,9,11,13,15]},tags:["rolling"]},
+  {name:"The Unknown Drummer",genre:"Breaks",inst:{BD:[1,4,7,11],SN:[2,5,8,13],CH:[2,3,5,6,8,14],OH:[9,15]},tags:["complex"]},
+  {name:"Standard Breakbeat 1",genre:"Breaks",inst:{BD:[1,11],SN:[5,13]},tags:["minimal"]},
+  {name:"Standard Breakbeat 2",genre:"Breaks",inst:{BD:[1,3,11],SN:[5,13]},tags:["minimal"]},
+  {name:"Standard Breakbeat 3",genre:"Breaks",inst:{BD:[1,3,7,11],SN:[5,8,10,13]},tags:[]},
+  {name:"Polyrhythmic",genre:"Breaks",sub:"A/B",inst:{BD:[1,7],SN:[3,5,9,11,12,13,15,16]},tags:["ab","complex"]},
+  {name:"Irregular 1",genre:"Breaks",sub:"A/B",inst:{BD:[1,3,4,7,11],SN:[5,8,13,16]},tags:["ab","complex"]},
+  {name:"Irregular 2",genre:"Breaks",sub:"A/B",inst:{BD:[1,8,11],SN:[4,13]},tags:["ab"]},
+  {name:"Irregular 3",genre:"Breaks",inst:{BD:[1,4,9,15],SN:[2,5,11,14]},tags:["complex"]},
+  {name:"Rolling 1",genre:"Breaks",inst:{BD:[1,11],SN:[5,13]},tags:["rolling","minimal"]},
+  {name:"Rolling 2",genre:"Breaks",inst:{BD:[1,11,14],SN:[5,13]},tags:["rolling"]},
+  {name:"Rolling 3",genre:"Breaks",sub:"A/B",inst:{BD:[1,7,13],SN:[5,11]},tags:["rolling","ab"]},
+  {name:"Rolling 4",genre:"Breaks",sub:"A/B",inst:{BD:[1,2],SN:[5,13]},tags:["rolling","ab"]},
+  {name:"Rolling 5",genre:"Breaks",sub:"A/B",inst:{BD:[1,3,11],SN:[5,13]},tags:["rolling","ab"]},
+  {name:"Rolling 6",genre:"Breaks",sub:"A/B",inst:{BD:[1,7,12],SN:[5,13]},tags:["rolling","ab"]},
+  {name:"Rolling 7",genre:"Breaks",sub:"A/B/C/D",inst:{BD:[1,8,9,12],SN:[5,13]},tags:["rolling","ab"]},
+  {name:"Rolling 8",genre:"Breaks",inst:{BD:[1,8],SN:[5,13]},tags:["rolling"]},
+  {name:"Rolling 9",genre:"Breaks",sub:"A/B",inst:{BD:[1,9,11],SN:[5,13]},tags:["rolling","ab"]},
+  {name:"Rolling 10",genre:"Breaks",inst:{BD:[1,8,12],SN:[5,13]},tags:["rolling"]},
+  {name:"Rolling 11",genre:"Breaks",inst:{BD:[1,6,7,10,11],SN:[5,13]},tags:["rolling","complex"]},
+  {name:"Hybrid Kick",genre:"Breaks",sub:"+ endings 1–6",inst:{BD:[1,9],SN:[5,13]},tags:["ab"]},
+  {name:"Ghost Snare 1",genre:"Breaks",sub:"A/B",inst:{SN:[5,8,10,13,16]},tags:["ab","minimal"]},
+  {name:"Ghost Snare 2",genre:"Breaks",sub:"A/B",inst:{SN:[2,5,8,13,16]},tags:["ab","minimal"]},
+
+  {name:"Rock 1",genre:"Rock",inst:{BD:[1,8,9,11],SN:[5,13],CY:[1],CH:[1,3,5,7,9,11,13,15]},tags:["heavy"]},
+  {name:"Rock 2",genre:"Rock",inst:{BD:[1,8,9,11],SN:[5,13],CH:[1,3,5,7,9,11,13,15]},tags:["heavy"]},
+  {name:"Rock 3",genre:"Rock",inst:{BD:[1,8,9,11],SN:[5,13],OH:[15],CH:[1,3,5,7,9,11,13,15]},tags:["heavy"]},
+  {name:"Rock 4",genre:"Rock",inst:{BD:[1,8,9,11],SN:[5,13,15,16],OH:[15],CH:[1,3,5,7,9,11,13,15]},tags:["heavy","complex"]},
+
+  {name:"Electro 1",genre:"Electro",sub:"A/B",inst:{SN:[5,13],BD:[1,7]},tags:["ab","minimal"]},
+  {name:"Electro 2",genre:"Electro",sub:"A/B",inst:{SN:[5,13],BD:[1,11,14]},tags:["ab"]},
+  {name:"Electro 3",genre:"Electro",sub:"A/B",inst:{SN:[5,13],BD:[1,7,12]},tags:["ab"]},
+  {name:"Electro 4",genre:"Electro",inst:{SN:[5,13],BD:[1,7,11,14]},tags:[]},
+  {name:"Siberian Nights",genre:"Electro",inst:{CH:[1,3,4,5,7,8,9,11,12,13,15,16],SN:[5,13],BD:[1,7]},tags:[]},
+  {name:"New Wave",genre:"Electro",inst:{BD:[1,7,9,10],SN:[5,13],CH:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],OH:[3],SH:[5,13]},tags:["complex"]},
+
+  {name:"House",genre:"House",inst:{BD:[1,5,9,13],SN:[5,13],CY:[1],OH:[3,7,11,15]},tags:[]},
+  {name:"House 2",genre:"House",inst:{BD:[1,5,9,13],SN:[5,13],CH:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],OH:[3,6,11,14]},tags:[]},
+  {name:"Brit House",genre:"House",inst:{BD:[1,5,9,13],CL:[5,13],CY:[3,7,11,15],CH:[1,2,4,5,6,8,9,10,12,13,14,16],OH:[3,7,11,15]},tags:["complex"]},
+  {name:"French House",genre:"House",inst:{BD:[1,5,9,13],CL:[5,13],SH:[1,2,3,5,7,8,9,10,11,13,15,16],CH:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],OH:[2,4,6,8,10,12,14,16]},tags:["complex"]},
+  {name:"Dirty House",genre:"House",inst:{BD:[1,3,5,9,11,13,16],SN:[5,13],CL:[3,5,9,11,13],CH:[11,16],OH:[3,11,15]},tags:["heavy","complex"]},
+  {name:"Deep House",genre:"House",inst:{BD:[1,5,9,13],CL:[5,13],CH:[2,8,10],OH:[3,7,11,15]},tags:["minimal"]},
+  {name:"Deeper House",genre:"House",inst:{BD:[1,5,9,13],CL:[2,10],MT:[3,8,11],SH:[4,9],OH:[3,7,11,12,15]},tags:["complex"]},
+  {name:"Slow Deep House",genre:"House",inst:{BD:[1,5,9,13],CL:[5,13],SH:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],CH:[1,5,9,13],OH:[3,4,7,8,10,11,13]},tags:["complex"]},
+  {name:"Footwork",genre:"House",sub:"A/B",inst:{BD:[1,4,7,9,12,15],CL:[13],CH:[3,11],RS:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},tags:["ab","complex","heavy"]},
+
+  {name:"Miami Bass",genre:"Miami Bass",sub:"A/B",inst:{BD:[1,7],SN:[5,13],CH:[1,3,4,5,7,8,9,11,12,13,15,16]},tags:["ab","heavy"]},
+  {name:"Sally",genre:"Miami Bass",inst:{BD:[1,7,11,15],SN:[5,13],LT:[1,7,11,15],CH:[1,3,5,7,9,11,13,15]},tags:["heavy"]},
+  {name:"Rock the Planet",genre:"Miami Bass",inst:{BD:[1,4,7],SN:[5,13],CH:[1,3,4,5,7,8,9,11,12,13,14,15,16]},tags:["heavy"]},
+
+  {name:"Hip Hop 1",genre:"Hip-Hop",sub:"A/B",inst:{BD:[1,7,8,12,15],SN:[5,13]},tags:["ab"]},
+  {name:"Hip Hop 2",genre:"Hip-Hop",sub:"A/B",inst:{BD:[1,8,9,10,14,16],SN:[5,13]},tags:["ab"]},
+  {name:"Hip Hop 3",genre:"Hip-Hop",sub:"A/B",inst:{BD:[1,3,9,11],SN:[5,13]},tags:["ab"]},
+  {name:"Hip Hop 4",genre:"Hip-Hop",sub:"A/B",inst:{BD:[1,4,8,10,11,16],SN:[5,13]},tags:["ab"]},
+  {name:"Hip Hop 5",genre:"Hip-Hop",inst:{BD:[1,3,8,9,11,16],SN:[5,13]},tags:[]},
+  {name:"Hip Hop 6",genre:"Hip-Hop",inst:{BD:[1,3,11,12,16],SN:[5,13],CH:[1,3,5,7,9,11,13,15]},tags:[]},
+  {name:"Hip Hop 7",genre:"Hip-Hop",inst:{BD:[1,8,11,14,16],SN:[5,13],CH:[1,3,5,7,9,11,13,15]},tags:[]},
+  {name:"Hip Hop 8",genre:"Hip-Hop",inst:{BD:[1,4,9,11,12],SN:[5,13],CH:[1,2,4,5,7,8,9,10,12,13,15,16],OH:[6,14]},tags:["complex"]},
+  {name:"Trap",genre:"Hip-Hop",sub:"A/B",inst:{BD:[1,7,13],SN:[9],CH:[1,3,5,7,9,11,13,15]},tags:["ab","minimal"]},
+  {name:"Planet Rock",genre:"Hip-Hop",sub:"A/B",inst:{CH:[1,3,4,5,7,8,9,11,12,13,14,15,16],CB:[1,3,5,7,8,10,12,13,15],SN:[5,13],BD:[1,7]},tags:["ab","complex"]},
+  {name:"Inna Club",genre:"Hip-Hop",inst:{OH:[1,3,5,7,9,11,13,15],SN:[5,13],BD:[3,8,11,16]},tags:[]},
+  {name:"Ice",genre:"Hip-Hop",inst:{SN:[5,13],BD:[1,7,11,15],SH:[1,3,5,7,9,11,13,15]},tags:[]},
+  {name:"Back to Cali",genre:"Hip-Hop",sub:"A/B",inst:{CH:[1,3,5,7,9,11,13,15],SN:[5,13],BD:[1,7]},tags:["ab"]},
+  {name:"Snoop Styles",genre:"Hip-Hop",inst:{RS:[3,6,9,12],OH:[1,4,7,11],SN:[5,13],BD:[1,4,7,11]},tags:["complex"]},
+  {name:"Boom Bap",genre:"Hip-Hop",inst:{CH:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],CL:[3,7,11,15],SN:[3,7,11,15],BD:[1,3,6,10,14]},tags:["complex","heavy"]},
+  {name:"Most Wanted",genre:"Hip-Hop",sub:"A/B",inst:{CH:[1,3,5,7,9,11,13,15],SN:[5,13],BD:[1,7,9,10,16]},tags:["ab"]},
+  {name:"The Groove",genre:"Hip-Hop",sub:"A/B",inst:{CH:[1,3,5,7,9,11,13,15],SN:[5,13],BD:[1,4,8,12,15]},tags:["ab","complex"]},
+
+  {name:"Amen Break",genre:"Funk/Soul",sub:"A/B/C/D",inst:{BD:[1,3,11,12],SN:[5,8,10,13,16],CH:[1,3,5,7,9,11,13,15]},tags:["ab","break","heavy"]},
+  {name:"The Funky Drummer",genre:"Funk/Soul",inst:{BD:[1,3,7,11,14],SN:[5,8,10,12,13,16],CH:[1,2,3,4,5,6,7,9,10,11,12,13,15,16],OH:[8,14]},tags:["complex","heavy"]},
+  {name:"Impeach the President",genre:"Funk/Soul",inst:{BD:[1,8,9,15],SN:[5,13],CH:[1,3,5,7,8,9,13,15],OH:[11]},tags:[]},
+  {name:"When the Levee Breaks",genre:"Funk/Soul",inst:{BD:[1,2,8,11,12],SN:[5,13],CH:[1,3,5,7,9,11,13,15]},tags:["heavy"]},
+  {name:"The Big Beat",genre:"Funk/Soul",inst:{BD:[1,4,7,9],SN:[5,13],CH:[5,13]},tags:["minimal"]},
+  {name:"Ashley's Roachclip",genre:"Funk/Soul",inst:{BD:[1,3,7,9,10],SN:[5,13],CH:[1,3,5,7,9,13,15],OH:[11],CB:[1,3,5,7,9,11,13,15]},tags:["complex"]},
+  {name:"Superstition",genre:"Funk/Soul",inst:{BD:[1,5,9,13],SN:[5,13],CH:[1,3,5,7,8,9,10,11,13,15,16]},tags:["heavy"]},
+  {name:"Cissy Strut",genre:"Funk/Soul",sub:"A/B/C/D",inst:{BD:[1,4,6,10,12,13,15],SN:[5,8,10,11]},tags:["ab","complex"]},
+  {name:"The Funky President",genre:"Funk/Soul",inst:{CY:[1,3,5,7,9,11,13,15],SN:[5,13],BD:[1,4,8,10,11]},tags:[]},
+  {name:"Synthetic Substitution",genre:"Funk/Soul",sub:"A/B",inst:{BD:[1,3,8,10,11,12,16],SN:[5,9],CY:[1,3,5,7,9,11,13,15]},tags:["ab"]},
+  {name:"Lady Marmalade",genre:"Funk/Soul",sub:"A/B",inst:{CY:[1,3,5,7,9,11,13,15],SN:[5,13],BD:[1,3,7,9,15]},tags:["ab"]},
+  {name:"Groove Me",genre:"Funk/Soul",inst:{CY:[1,3,5,7,9,11,13,15],SN:[5,13],BD:[1,4,5,8,9,10,12,14,16]},tags:["complex","heavy"]},
+  {name:"Use Me",genre:"Funk/Soul",sub:"A/B/C/D",inst:{CY:[1,3,5,6,7,8,9,10,11,13,14,15,16],SN:[3,5,7,8,10,11,13,15,16],BD:[1,5,13]},tags:["ab","complex"]},
+  {name:"More Bounce to the Ounce",genre:"Funk/Soul",inst:{CH:[3,5,7,9,11,13,15],OH:[1],SN:[5,13],BD:[1,9,10]},tags:[]},
+
+  {name:"Son Clave",genre:"Afro-Cuban",inst:{BD:[1,4,5,8,9,12,13,16],RS:[1,4,7,11,13],CY:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},tags:["afro","complex"]},
+  {name:"Rumba",genre:"Afro-Cuban",inst:{BD:[1,4,5,8,9,12,13,16],RS:[1,4,8,11,13],CY:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},tags:["afro","complex"]},
+  {name:"Bossa Nova",genre:"Afro-Cuban",inst:{BD:[1,4,5,8,9,12,13,16],RS:[1,4,7,11,14],CY:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},tags:["afro","complex"]},
+  {name:"Bouton",genre:"Afro-Cuban",inst:{BD:[1,9,11,15],RS:[4,7,13],CH:[1,3,4,5,7,9,11,13,15]},tags:["afro"]},
+  {name:"Gahu",genre:"Afro-Cuban",inst:{BD:[1,5,9,13,15],RS:[3,4,7,8,11,12,15,16],CB:[1,4,7,11,15]},tags:["afro","complex"]},
+  {name:"Shiko",genre:"Afro-Cuban",inst:{BD:[1,5,7,9,13,15],RS:[3,4,7,8,11,12,15,16],CB:[1,5,7,11,13]},tags:["afro","complex"]},
+  {name:"Soukous",genre:"Afro-Cuban",inst:{BD:[1,5,9,13,15],RS:[1,4,7,9,12,15],CB:[1,4,7,10,11]},tags:["afro","complex"]},
+
+  {name:"Drum and Bass 1",genre:"DnB",sub:"A/B",inst:{BD:[1,4,8,10,11,16],SN:[5,13],CH:[1,3,5,7,9,11,13,15]},tags:["ab","heavy"]},
+  {name:"Drum and Bass 2",genre:"DnB",sub:"A/B",inst:{BD:[1,8,10,12,16],SN:[5,13],CH:[1,3,5,7,9,11,13,15]},tags:["ab","heavy"]},
+  {name:"Drum and Bass 3",genre:"DnB",inst:{BD:[1,11],SN:[5,13],CH:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],OH:[7,8,9,10]},tags:["heavy"]},
+  {name:"Drum and Bass 4",genre:"DnB",sub:"A/B",inst:{BD:[1,7],SN:[5,11,13],CH:[1,3,5,7,9,11,13,15],OH:[1]},tags:["ab"]},
+  {name:"Jungle",genre:"DnB",sub:"A/B",inst:{BD:[1,3,11],SN:[5,8,10,15],CH:[1,3,5,7,9,11,13,15]},tags:["ab","complex","heavy"]},
+
+  {name:"Techno",genre:"EDM",inst:{BD:[1,5,9,13,15],SN:[5,13],CH:[10],OH:[3,7,11,15]},tags:[]},
+  {name:"Dubstep",genre:"EDM",sub:"A/B",inst:{BD:[1,11],SN:[9],CH:[2,3,7,12,15],OH:[5,14]},tags:["ab"]},
+  {name:"Dubstep Ratcheted",genre:"EDM",inst:{BD:[1,4,9,12],SN:[5,13,16],CH:[1,2,6,7,8,9,10,12,13,14,16],OH:[7]},tags:["complex"]},
+  {name:"UK Garage",genre:"EDM",sub:"A/B",inst:{BD:[1,11],CL:[5,13],CH:[3,4,7,11,15,16],RS:[2,8,14],MT:[6,12]},tags:["ab","complex"]},
+  {name:"Synth Wave",genre:"EDM",inst:{BD:[1,9],SN:[5,13],CH:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],OH:[14]},tags:[]},
+
+  {name:"Half Drop",genre:"Dub",inst:{BD:[1],SN:[9],CH:[1,3,5,7,9,11,13,15]},tags:["minimal"]},
+  {name:"One Drop",genre:"Dub",inst:{BD:[9],SN:[9],CH:[1,3,5,7,9,11,13,15]},tags:["minimal"]},
+  {name:"Two Drop",genre:"Dub",inst:{BD:[1,9],SN:[9],CH:[1,3,5,7,9,11,13,15]},tags:["minimal"]},
+  {name:"Steppers",genre:"Dub",inst:{BD:[1,5,9,13],SN:[9],CH:[1,3,5,7,9,11,13,15]},tags:[]},
+
+  {name:"Reggaeton 1",genre:"Reggaeton",inst:{BD:[1,5,9,13],SN:[4,7,12,15],CH:[1,3,5,7,9,11,13,15]},tags:[]},
+  {name:"Reggaeton 2",genre:"Reggaeton",inst:{CH:[3,7,11,15],SN:[4,6,7,8,11,12,15],BD:[1,8]},tags:[]},
+  {name:"Reggaeton 3",genre:"Reggaeton",sub:"A/B",inst:{SN:[1,4,7,9,12,15],BD:[1,9]},tags:["ab","minimal"]},
+
+  {name:"Pop 1",genre:"Pop",inst:{CH:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],OH:[1,4,7,9,10],RS:[1,2,4,7,8,11,12],SN:[5,13],BD:[1,2,4,8,11]},tags:["complex"]},
+  {name:"In the Air Last Night",genre:"Pop",sub:"A/B",inst:{HT:[3,7],OH:[1,13],CH:[3,7,11,13],SN:[13],BD:[11]},tags:["ab","minimal"]},
+  {name:"Bleu Monday",genre:"Pop",sub:"A/B",inst:{OH:[3,7,11,15],SN:[5,13],BD:[1,9]},tags:["ab"]},
+  {name:"Nineteen",genre:"Pop",sub:"A/B",inst:{CH:[1,4,7,9,10],OH:[1,4,7,9,10],RS:[1,2,4,7,8,11,12],BD:[1,2,4,8,11]},tags:["ab","complex"]},
+
+  {name:"Drum Roll 1",genre:"Rolls",inst:{HT:[9,10,11],MT:[12,13,14],LT:[15,16],OH:[1],CY:[1]},tags:[]},
+  {name:"Drum Roll 2",genre:"Rolls",inst:{BD:[13,15],SN:[1,3,4,5,7,9,10,11,12]},tags:["heavy"]},
+  {name:"Drum Roll 3",genre:"Rolls",inst:{SN:[1,2,3,5,6,7,9,11,13,14,15,16]},tags:["heavy"]},
+  {name:"Drum Roll 4",genre:"Rolls",inst:{BD:[1,7,13],SN:[4,5,8,9,16],CY:[1,7,13]},tags:[]},
+  {name:"Drum Roll 10",genre:"Rolls",inst:{HT:[3,4],MT:[7,8,11,12],LT:[15,16],SN:[1,2,5,6,9,10,13,14]},tags:["complex","heavy"]},
+  {name:"Drum Roll 14",genre:"Rolls",inst:{HT:[10,11,12,13],MT:[4,5,6,7,8,9,14,15],LT:[1,2,3,16]},tags:["complex"]},
+  {name:"Drum Roll 16",genre:"Rolls",inst:{SN:[1,2,7,8,13,14],BD:[3,5,11,15],CH:[3,9,15],CY:[5,11]},tags:[]},
+  {name:"Drum Roll 20",genre:"Rolls",inst:{HT:[3,5],MT:[7,15],LT:[16],SN:[1,9,11,14],BD:[2,4,6,8,10,12,13],CY:[9]},tags:["complex"]},
+];
+
+const GENRES = [...new Set(PATTERNS.map(p=>p.genre))];
+let activeGenre = 'all';
+let activeMoods = new Set();
+let openCardId = null;
+
+document.getElementById('total-count').textContent = PATTERNS.length + ' паттернов';
+document.getElementById('footer-count').textContent = PATTERNS.length + ' patterns';
+
+// Build genre chips
+const gc = document.getElementById('genre-chips');
+gc.innerHTML = `<button class="chip active" onclick="setGenre('all',this)">Все</button>` +
+  GENRES.map(g => `<button class="chip" onclick="setGenre('${g}',this)">${g}</button>`).join('');
+
+function setGenre(g, el){
+  activeGenre = g;
+  document.querySelectorAll('#genre-chips .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+function toggleMood(el){
+  const m = el.dataset.mood;
+  if(activeMoods.has(m)){ activeMoods.delete(m); el.classList.remove('active'); }
+  else { activeMoods.add(m); el.classList.add('active'); }
+  render();
+}
+
+function onSearch(){
+  const v = document.getElementById('search').value;
+  document.getElementById('clear-btn').classList.toggle('visible', v.length > 0);
+  render();
+}
+
+function clearSearch(){
+  document.getElementById('search').value = '';
+  document.getElementById('clear-btn').classList.remove('visible');
+  render();
+}
+
+function drawGrid(inst){
+  const rows = Object.keys(inst);
+  let t = '<table class="dg"><thead><tr class="beat-header"><td></td>';
+  for(let i=1;i<=16;i++) t+=`<td>${i}</td>`;
+  t+='</tr></thead><tbody>';
+  rows.forEach(r=>{
+    const hits = new Set(inst[r]);
+    t+=`<tr><td class="row-label">${r}</td>`;
+    for(let i=1;i<=16;i++){
+      t+=`<td><div class="cell${hits.has(i)?' on':''}${hits.has(i)&&i===1?' beat1':''}"></div></td>`;
+    }
+    t+='</tr>';
+  });
+  return t+'</tbody></table>';
+}
+
+function toggleCard(id){
+  if(openCardId===id){ openCardId=null; } else { openCardId=id; }
+  document.querySelectorAll('.card').forEach(c=>{
+    const isOpen = c.dataset.id===String(id);
+    c.classList.toggle('open',isOpen);
+  });
+}
+
+function render(){
+  const q = document.getElementById('search').value.toLowerCase().trim();
+  const filtered = PATTERNS.filter(p=>{
+    if(activeGenre!=='all' && p.genre!==activeGenre) return false;
+    if(activeMoods.size){
+      const tags = p.tags||[];
+      let match = false;
+      for(const m of activeMoods){
+        if(m==='ab'&&p.sub){ match=true; break; }
+        if(tags.includes(m)){ match=true; break; }
+      }
+      if(!match) return false;
+    }
+    if(q){
+      const hay = (p.name+' '+p.genre+' '+(p.sub||'')+' '+Object.keys(p.inst).join(' ')).toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  document.getElementById('results-bar').textContent =
+    filtered.length === PATTERNS.length
+      ? `Все паттерны · ${filtered.length}`
+      : `Найдено: ${filtered.length} из ${PATTERNS.length}`;
+
+  const container = document.getElementById('patterns');
+  if(!filtered.length){
+    container.innerHTML='<div class="empty"><span>◾</span>Паттерны не найдены</div>';
+    return;
+  }
+
+  container.innerHTML = filtered.map((p,i)=>{
+    const id = i;
+    const instKeys = Object.keys(p.inst).join(' · ');
+    const isOpen = openCardId===id;
+    return `<div class="card${isOpen?' open':''}" data-id="${id}" onclick="toggleCard(${id})">
+      <div class="card-head">
+        <div class="card-left">
+          <div class="card-name">${p.name}${p.sub?` <span style="color:var(--text3);font-weight:400;font-size:11px">(${p.sub})</span>`:''}</div>
+          <div class="card-sub">${instKeys}</div>
+        </div>
+        <span class="genre-badge">${p.genre}</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="drum-grid-wrap">${drawGrid(p.inst)}</div>
+        <div class="card-tags">${(p.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+render();
+
+// PWA service worker
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
