@@ -408,12 +408,39 @@ main {
 .cell.playing-col { outline: 1px solid rgba(200,240,80,.3); }
 .cell.on.playing-col { background: #fff; filter: brightness(1.2); }
 
+.card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 9px;
+  gap: 6px;
+}
 .card-tags {
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
-  margin-top: 9px;
+  flex: 1;
 }
+.midi-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: .06em;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text3);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: color .12s, border-color .12s;
+}
+.midi-btn:hover { color: var(--accent2); border-color: var(--accent2); }
+.midi-btn:active { color: var(--accent); border-color: var(--accent); }
+.midi-btn svg { width: 10px; height: 10px; flex-shrink: 0; }
 .tag {
   font-family: var(--mono);
   font-size: 9px;
@@ -1544,7 +1571,13 @@ function render() {
           <div class="step-indicators">${dots}</div>
         </div>
         <div class="drum-grid-wrap">${drawGrid(p.inst)}</div>
-        <div class="card-tags">${(p.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}</div>
+        <div class="card-actions">
+          <div class="card-tags">${(p.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}</div>
+          <button class="midi-btn" onclick="downloadMidi(${id},event)" title="Скачать MIDI">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            MIDI
+          </button>
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -1596,6 +1629,95 @@ function render() {
     }).join('');
   }
 })();
+
+// ─── MIDI EXPORT ─────────────────────────────────────────────────────────────
+const MIDI_NOTE = {
+  BD: 36, SN: 38, CH: 42, OH: 46, CL: 39, HC: 39,
+  CY: 49, CB: 56, RS: 37, SH: 70, HT: 50, MT: 47,
+  LT: 41, AC: 44
+};
+
+function writeMidi(pattern) {
+  const ticksPerBeat = 96;
+  const stepsPerBeat = 4; // 16 steps = 4 beats
+  const ticksPerStep = ticksPerBeat / stepsPerBeat;
+  const tempo = Math.round(60000000 / bpm); // microseconds per beat
+
+  // Collect all events: { tick, note, vel }
+  const events = [];
+  for (const [abbr, steps] of Object.entries(pattern.inst)) {
+    const note = MIDI_NOTE[abbr.toUpperCase()] || 38;
+    for (const step of steps) {
+      const tick = (step - 1) * ticksPerStep;
+      events.push({ tick, note, vel: abbr === 'AC' ? 100 : 80 });
+    }
+  }
+  // Sort by tick
+  events.sort((a, b) => a.tick - b.tick || a.note - b.note);
+
+  // Helper writers
+  function num4(n) {
+    return [(n >> 24) & 0xff, (n >> 16) & 0xff, (n >> 8) & 0xff, n & 0xff];
+  }
+  function num2(n) { return [(n >> 8) & 0xff, n & 0xff]; }
+  function varLen(n) {
+    if (n < 0x80) return [n];
+    if (n < 0x4000) return [((n >> 7) & 0x7f) | 0x80, n & 0x7f];
+    if (n < 0x200000) return [((n >> 14) & 0x7f) | 0x80, ((n >> 7) & 0x7f) | 0x80, n & 0x7f];
+    return [((n >> 21) & 0x7f) | 0x80, ((n >> 14) & 0x7f) | 0x80, ((n >> 7) & 0x7f) | 0x80, n & 0x7f];
+  }
+
+  // Build track events bytes
+  const trackBytes = [];
+  // Tempo meta event (at tick 0)
+  trackBytes.push(...varLen(0), 0xff, 0x51, 0x03, (tempo >> 16) & 0xff, (tempo >> 8) & 0xff, tempo & 0xff);
+  // Channel 9 = percussion
+  const CH = 9;
+  let prevTick = 0;
+  for (const ev of events) {
+    const delta = ev.tick - prevTick;
+    // Note on
+    trackBytes.push(...varLen(delta), 0x90 | CH, ev.note, ev.vel);
+    // Note off after small duration (8 ticks)
+    trackBytes.push(...varLen(8), 0x80 | CH, ev.note, 0);
+    prevTick = ev.tick + 8;
+  }
+  // End of track
+  trackBytes.push(...varLen(0), 0xff, 0x2f, 0x00);
+
+  // Header chunk
+  const header = [
+    0x4d,0x54,0x68,0x64, // MThd
+    ...num4(6),           // length
+    ...num2(0),           // format 0
+    ...num2(1),           // 1 track
+    ...num2(ticksPerBeat) // ticks per quarter note
+  ];
+
+  // Track chunk
+  const track = [
+    0x4d,0x54,0x72,0x6b,  // MTrk
+    ...num4(trackBytes.length),
+    ...trackBytes
+  ];
+
+  return new Uint8Array([...header, ...track]);
+}
+
+function downloadMidi(id, event) {
+  event.stopPropagation();
+  const pattern = PATTERNS[id];
+  if (!pattern) return;
+  const bytes = writeMidi(pattern);
+  const blob = new Blob([bytes], { type: 'audio/midi' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const safeName = (pattern.name + (pattern.sub ? `_${pattern.sub}` : '')).replace(/[^a-zA-Z0-9а-яА-Я_\- ]/g, '').replace(/\s+/g, '_');
+  a.href = url;
+  a.download = `${safeName}.mid`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
 render();
